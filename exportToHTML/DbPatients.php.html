@@ -1,0 +1,266 @@
+<html>
+<head>
+<title>DbPatients.php</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cc7832;}
+.s1 { color: #a9b7c6;}
+.s2 { color: #629755; font-style: italic;}
+.s3 { color: #629755; font-weight: bold; font-style: italic;}
+.s4 { color: #a9b7c6;}
+.s5 { color: #9876aa;}
+.s6 { color: #6a8759;}
+.s7 { color: #808080;}
+.s8 { color: #6897bb;}
+.ls0 { height: 1px; border-width: 0; color: #4d4d4d; background-color:#4d4d4d}
+</style>
+</head>
+<body bgcolor="#2b2b2b">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+DbPatients.php</font>
+</center></td></tr></table>
+<pre><span class="s0">&lt;?php</span>
+<hr class="ls0"><span class="s2">/**</span>
+ <span class="s2">* Class DbPatients</span>
+ <span class="s2">*</span>
+ <span class="s2">* Clase que contiene las operaciones CRUD relacionadas con los pacientes</span>
+ <span class="s2">*</span>
+ <span class="s2">* </span><span class="s3">@package </span><span class="s2">includes</span>
+ <span class="s2">* </span><span class="s3">@subpackage </span><span class="s2">none</span>
+ <span class="s2">* </span><span class="s3">@author </span><span class="s2">Ernesto Vivar Laviña &lt;</span><span class="s3">evivar@ucm.es</span><span class="s2">&gt;</span>
+ <span class="s2">*</span>
+ <span class="s2">*/</span>
+<span class="s0">class </span><span class="s4">DbPatients</span>
+<span class="s1">{</span>
+
+    <span class="s2">/**</span>
+     <span class="s2">* </span><span class="s3">@var </span><span class="s2">mysqli|null Variable que almacena la conexión con la base de datos</span>
+     <span class="s2">*/</span>
+    <span class="s0">private </span><span class="s5">$conn</span><span class="s0">;</span>
+
+    <span class="s2">/**</span>
+     <span class="s2">* DbPatients constructor.</span>
+     <span class="s2">*/</span>
+    <span class="s0">function </span><span class="s4">__construct</span><span class="s1">()</span>
+    <span class="s1">{</span>
+        <span class="s0">include_once </span><span class="s4">dirname</span><span class="s1">(</span><span class="s4">__FILE__</span><span class="s1">) . </span><span class="s6">'/DbConnect.php'</span><span class="s0">;</span>
+        <span class="s5">$db </span><span class="s1">= </span><span class="s0">new </span><span class="s4">DbConnect</span><span class="s0">;</span>
+        <span class="s5">$this</span><span class="s1">-&gt;</span><span class="s4">conn </span><span class="s1">= </span><span class="s5">$db</span><span class="s1">-&gt;</span><span class="s4">connect</span><span class="s1">()</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s7">// CRUD Functions</span>
+
+    <span class="s2">/********** CREATE **********/</span>
+
+    <span class="s2">/**</span>
+     <span class="s2">* Crea e inserta un paciente en la tabla patients_login, en este caso se pasa el patient_id</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $patient_id el id del paciente</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $email el email del paciente</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $password la contraseña del paciente</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $name el nombre del paciente</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $surname1 el primer apellido del paciente</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $surname2 el segundo apellido del paciente</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $init_date la fecha en la que se incluyó al paciente en el estudio</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $end_date la fecha en el que el paciente terminará el estudio</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">int $phone teléfono del paciente</span>
+     <span class="s2">* </span><span class="s3">@return </span><span class="s2">int Resultado de la operación</span>
+     <span class="s2">*/</span>
+    <span class="s0">public function </span><span class="s4">createPatient_login</span><span class="s1">(</span><span class="s5">$patient_id</span><span class="s0">, </span><span class="s5">$email</span><span class="s0">, </span><span class="s5">$password</span><span class="s0">, </span><span class="s5">$name</span><span class="s0">, </span><span class="s5">$surname1</span><span class="s0">, </span><span class="s5">$surname2</span><span class="s0">, </span><span class="s5">$init_date</span><span class="s0">, </span><span class="s5">$end_date</span><span class="s0">, </span><span class="s5">$phone</span><span class="s1">)</span>
+    <span class="s1">{</span>
+        <span class="s0">if </span><span class="s1">(!</span><span class="s5">$this</span><span class="s1">-&gt;</span><span class="s4">isEmailValid</span><span class="s1">(</span><span class="s5">$email</span><span class="s1">)) {</span>
+            <span class="s5">$stmt </span><span class="s1">= </span><span class="s5">$this</span><span class="s1">-&gt;</span><span class="s4">conn</span><span class="s1">-&gt;</span><span class="s4">prepare</span><span class="s1">(</span><span class="s6">&quot;INSERT INTO patients_login (patient_id, email, password, name, surname1, surname2, init_date, end_date, phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)&quot;</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">bind_param</span><span class="s1">(</span><span class="s6">&quot;ssssssssi&quot;</span><span class="s0">, </span><span class="s5">$patient_id</span><span class="s0">, </span><span class="s5">$email</span><span class="s0">, </span><span class="s5">$password</span><span class="s0">, </span><span class="s5">$name</span><span class="s0">, </span><span class="s5">$surname1</span><span class="s0">, </span><span class="s5">$surname2</span><span class="s0">, </span><span class="s5">$init_date</span><span class="s0">, </span><span class="s5">$end_date</span><span class="s0">, </span><span class="s5">$phone</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s0">if </span><span class="s1">(</span><span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">execute</span><span class="s1">()) {</span>
+                <span class="s0">return </span><span class="s4">USER_CREATED</span><span class="s0">;</span>
+            <span class="s1">} </span><span class="s0">else </span><span class="s1">{</span>
+                <span class="s0">return </span><span class="s4">USER_FAILURE</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">} </span><span class="s0">else </span><span class="s1">{</span>
+            <span class="s0">return </span><span class="s4">USER_EXISTS</span><span class="s0">;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+    <span class="s2">/**</span>
+     <span class="s2">* Crea e inserta un paciente en la tabla patients_login siempre y cuando el paciente no exista previamente</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $email el email del paciente</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $password la contraseña del paciente</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $name el nombre del paciente</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $surname1 el primer apellido del paciente</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $surname2 el segundo apellido del paciente</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $init_date la fecha en la que se incluyó al paciente en el estudio</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $end_date la fecha en el que el paciente terminará el estudio</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">int $phone teléfono del paciente</span>
+     <span class="s2">* </span><span class="s3">@return </span><span class="s2">int Resultado de la operación</span>
+     <span class="s2">*/</span>
+    <span class="s0">public function </span><span class="s4">createPatient</span><span class="s1">(</span><span class="s5">$email</span><span class="s0">, </span><span class="s5">$password</span><span class="s0">, </span><span class="s5">$name</span><span class="s0">, </span><span class="s5">$surname1</span><span class="s0">, </span><span class="s5">$surname2</span><span class="s0">, </span><span class="s5">$init_date</span><span class="s0">, </span><span class="s5">$end_date</span><span class="s0">, </span><span class="s5">$phone</span><span class="s1">)</span>
+    <span class="s1">{</span>
+        <span class="s0">if </span><span class="s1">(!</span><span class="s5">$this</span><span class="s1">-&gt;</span><span class="s4">isEmailValid</span><span class="s1">(</span><span class="s5">$email</span><span class="s1">)) {</span>
+            <span class="s5">$stmt </span><span class="s1">= </span><span class="s5">$this</span><span class="s1">-&gt;</span><span class="s4">conn</span><span class="s1">-&gt;</span><span class="s4">prepare</span><span class="s1">(</span><span class="s6">&quot;INSERT INTO patients_login (patient_id, email, password, name, surname1, surname2, init_date, end_date, phone) VALUES ('', ?, ?, ?, ?, ?, ?, ?, ?)&quot;</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">bind_param</span><span class="s1">(</span><span class="s6">&quot;sssssssi&quot;</span><span class="s0">, </span><span class="s5">$email</span><span class="s0">, </span><span class="s5">$password</span><span class="s0">, </span><span class="s5">$name</span><span class="s0">, </span><span class="s5">$surname1</span><span class="s0">, </span><span class="s5">$surname2</span><span class="s0">, </span><span class="s5">$init_date</span><span class="s0">, </span><span class="s5">$end_date</span><span class="s0">, </span><span class="s5">$phone</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s0">if </span><span class="s1">(</span><span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">execute</span><span class="s1">()) {</span>
+                <span class="s0">return </span><span class="s4">USER_CREATED</span><span class="s0">;</span>
+            <span class="s1">} </span><span class="s0">else </span><span class="s1">{</span>
+                <span class="s0">return </span><span class="s4">USER_FAILURE</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">} </span><span class="s0">else </span><span class="s1">{</span>
+            <span class="s0">return </span><span class="s4">USER_EXISTS</span><span class="s0">;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+
+    <span class="s2">/********** READ, READBY &amp; READALL **********/</span>
+
+    <span class="s2">/**</span>
+     <span class="s2">* Lee todos los pacientes de la tabla patients_login</span>
+     <span class="s2">* </span><span class="s3">@return </span><span class="s2">array Todos los pacientes leidos</span>
+     <span class="s2">*/</span>
+    <span class="s0">public function </span><span class="s4">readAllPatients</span><span class="s1">()</span>
+    <span class="s1">{</span>
+        <span class="s5">$stmt </span><span class="s1">= </span><span class="s5">$this</span><span class="s1">-&gt;</span><span class="s4">conn</span><span class="s1">-&gt;</span><span class="s4">prepare</span><span class="s1">(</span><span class="s6">&quot;SELECT patient_id, email, name, surname1, surname2, init_date, end_date, phone FROM patients_login WHERE patient_id LIKE 'CH%'&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">execute</span><span class="s1">()</span><span class="s0">;</span>
+        <span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">bind_result</span><span class="s1">(</span><span class="s5">$patient_id</span><span class="s0">, </span><span class="s5">$email</span><span class="s0">, </span><span class="s5">$name</span><span class="s0">, </span><span class="s5">$surname1</span><span class="s0">, </span><span class="s5">$surname2</span><span class="s0">, </span><span class="s5">$init_date</span><span class="s0">, </span><span class="s5">$end_date</span><span class="s0">, </span><span class="s5">$phone</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s5">$patients </span><span class="s1">= </span><span class="s0">array</span><span class="s1">()</span><span class="s0">;</span>
+        <span class="s0">while </span><span class="s1">(</span><span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">fetch</span><span class="s1">()) {</span>
+            <span class="s5">$patient </span><span class="s1">= </span><span class="s0">array</span><span class="s1">()</span><span class="s0">;</span>
+            <span class="s5">$patient</span><span class="s1">[</span><span class="s6">'patient_id'</span><span class="s1">] = </span><span class="s5">$patient_id</span><span class="s0">;</span>
+            <span class="s5">$patient</span><span class="s1">[</span><span class="s6">'email'</span><span class="s1">] = </span><span class="s5">$email</span><span class="s0">;</span>
+            <span class="s5">$patient</span><span class="s1">[</span><span class="s6">'name'</span><span class="s1">] = </span><span class="s5">$name</span><span class="s0">;</span>
+            <span class="s5">$patient</span><span class="s1">[</span><span class="s6">'surname1'</span><span class="s1">] = </span><span class="s5">$surname1</span><span class="s0">;</span>
+            <span class="s5">$patient</span><span class="s1">[</span><span class="s6">'surname2'</span><span class="s1">] = </span><span class="s5">$surname2</span><span class="s0">;</span>
+            <span class="s5">$patient</span><span class="s1">[</span><span class="s6">'init_date'</span><span class="s1">] = </span><span class="s5">$init_date</span><span class="s0">;</span>
+            <span class="s5">$patient</span><span class="s1">[</span><span class="s6">'end_date'</span><span class="s1">] = </span><span class="s5">$end_date</span><span class="s0">;</span>
+            <span class="s5">$patient</span><span class="s1">[</span><span class="s6">'phone'</span><span class="s1">] = </span><span class="s5">$phone</span><span class="s0">;</span>
+            <span class="s4">array_push</span><span class="s1">(</span><span class="s5">$patients</span><span class="s0">, </span><span class="s5">$patient</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s1">}</span>
+        <span class="s0">return </span><span class="s5">$patients</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s2">/**</span>
+     <span class="s2">* Lee un paciente dado su email</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $email el email del paciente</span>
+     <span class="s2">* </span><span class="s3">@return </span><span class="s2">array La información del paciente</span>
+     <span class="s2">*/</span>
+    <span class="s0">public function </span><span class="s4">readPatientByEmail</span><span class="s1">(</span><span class="s5">$email</span><span class="s1">)</span>
+    <span class="s1">{</span>
+        <span class="s5">$stmt </span><span class="s1">= </span><span class="s5">$this</span><span class="s1">-&gt;</span><span class="s4">conn</span><span class="s1">-&gt;</span><span class="s4">prepare</span><span class="s1">(</span><span class="s6">&quot;SELECT patient_id, email, name, surname1, surname2, init_date, end_date, phone FROM patients_login WHERE email = ?&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">bind_param</span><span class="s1">(</span><span class="s6">&quot;s&quot;</span><span class="s0">, </span><span class="s5">$email</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">execute</span><span class="s1">()</span><span class="s0">;</span>
+        <span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">bind_result</span><span class="s1">(</span><span class="s5">$patient_id</span><span class="s0">, </span><span class="s5">$email</span><span class="s0">, </span><span class="s5">$name</span><span class="s0">, </span><span class="s5">$surname1</span><span class="s0">, </span><span class="s5">$surname2</span><span class="s0">, </span><span class="s5">$init_date</span><span class="s0">, </span><span class="s5">$end_date</span><span class="s0">, </span><span class="s5">$phone</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">fetch</span><span class="s1">()</span><span class="s0">;</span>
+        <span class="s5">$patient </span><span class="s1">= </span><span class="s0">array</span><span class="s1">()</span><span class="s0">;</span>
+        <span class="s5">$patient</span><span class="s1">[</span><span class="s6">'patient_id'</span><span class="s1">] = </span><span class="s5">$patient_id</span><span class="s0">;</span>
+        <span class="s5">$patient</span><span class="s1">[</span><span class="s6">'email'</span><span class="s1">] = </span><span class="s5">$email</span><span class="s0">;</span>
+        <span class="s5">$patient</span><span class="s1">[</span><span class="s6">'name'</span><span class="s1">] = </span><span class="s5">$name</span><span class="s0">;</span>
+        <span class="s5">$patient</span><span class="s1">[</span><span class="s6">'surname1'</span><span class="s1">] = </span><span class="s5">$surname1</span><span class="s0">;</span>
+        <span class="s5">$patient</span><span class="s1">[</span><span class="s6">'surname2'</span><span class="s1">] = </span><span class="s5">$surname2</span><span class="s0">;</span>
+        <span class="s5">$patient</span><span class="s1">[</span><span class="s6">'init_date'</span><span class="s1">] = </span><span class="s5">$init_date</span><span class="s0">;</span>
+        <span class="s5">$patient</span><span class="s1">[</span><span class="s6">'end_date'</span><span class="s1">] = </span><span class="s5">$end_date</span><span class="s0">;</span>
+        <span class="s5">$patient</span><span class="s1">[</span><span class="s6">'phone'</span><span class="s1">] = </span><span class="s5">$phone</span><span class="s0">;</span>
+        <span class="s0">return </span><span class="s5">$patient</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s2">/**</span>
+     <span class="s2">* Lee la contraseña de un paciente dado el email</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $email el email del paciente</span>
+     <span class="s2">* </span><span class="s3">@return </span><span class="s2">mixed Contraseña del paciente</span>
+     <span class="s2">*/</span>
+    <span class="s0">public function </span><span class="s4">readPasswordByEmail</span><span class="s1">(</span><span class="s5">$email</span><span class="s1">)</span>
+    <span class="s1">{</span>
+        <span class="s5">$stmt </span><span class="s1">= </span><span class="s5">$this</span><span class="s1">-&gt;</span><span class="s4">conn</span><span class="s1">-&gt;</span><span class="s4">prepare</span><span class="s1">(</span><span class="s6">&quot;SELECT password FROM patients_login WHERE email = ?&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">bind_param</span><span class="s1">(</span><span class="s6">&quot;s&quot;</span><span class="s0">, </span><span class="s5">$email</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">execute</span><span class="s1">()</span><span class="s0">;</span>
+        <span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">bind_result</span><span class="s1">(</span><span class="s5">$password</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">fetch</span><span class="s1">()</span><span class="s0">;</span>
+        <span class="s0">return </span><span class="s5">$password</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+    <span class="s2">/********** UPDATE **********/</span>
+
+    <span class="s2">/**</span>
+     <span class="s2">* Actualiza la contraseña de un paciente</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $email el email del paciente</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $old_password la contraseña antigua</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $new_password la contraseña nueva</span>
+     <span class="s2">* </span><span class="s3">@return </span><span class="s2">int Representa el resultado de la operación</span>
+     <span class="s2">*/</span>
+    <span class="s0">public function </span><span class="s4">updatePatientPassword</span><span class="s1">(</span><span class="s5">$email</span><span class="s0">, </span><span class="s5">$old_password</span><span class="s0">, </span><span class="s5">$new_password</span><span class="s1">)</span>
+    <span class="s1">{</span>
+        <span class="s5">$dbPassword </span><span class="s1">= </span><span class="s5">$this</span><span class="s1">-&gt;</span><span class="s4">readPasswordByEmail</span><span class="s1">(</span><span class="s5">$email</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s0">if </span><span class="s1">(</span><span class="s5">$dbPassword </span><span class="s1">== </span><span class="s5">$old_password</span><span class="s1">) {</span>
+            <span class="s5">$stmt </span><span class="s1">= </span><span class="s5">$this</span><span class="s1">-&gt;</span><span class="s4">conn</span><span class="s1">-&gt;</span><span class="s4">prepare</span><span class="s1">(</span><span class="s6">&quot;UPDATE patients_login SET password = ? WHERE email = ?&quot;</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">bind_param</span><span class="s1">(</span><span class="s6">&quot;ss&quot;</span><span class="s0">, </span><span class="s5">$new_password</span><span class="s0">, </span><span class="s5">$email</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s0">if </span><span class="s1">(</span><span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">execute</span><span class="s1">()) {</span>
+                <span class="s0">return </span><span class="s4">PASSWORD_CHANGED</span><span class="s0">;</span>
+            <span class="s1">} </span><span class="s0">else </span><span class="s1">{</span>
+                <span class="s0">return </span><span class="s4">PASSWORD_NOT_CHANGED</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">} </span><span class="s0">else </span><span class="s1">{</span>
+            <span class="s0">return </span><span class="s4">PASSWORD_DONT_MATCH</span><span class="s0">;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+    <span class="s2">/********** DELETE **********/</span>
+
+    <span class="s2">/**</span>
+     <span class="s2">* Elimina a un paciente de la base de datos dado su id</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $patient_id el id del paciente</span>
+     <span class="s2">* </span><span class="s3">@return </span><span class="s2">bool True si se elimina correctamente al paciente, False en caso contrario</span>
+     <span class="s2">*/</span>
+    <span class="s0">public function </span><span class="s4">deletePatient</span><span class="s1">(</span><span class="s5">$patient_id</span><span class="s1">)</span>
+    <span class="s1">{</span>
+        <span class="s5">$stmt </span><span class="s1">= </span><span class="s5">$this</span><span class="s1">-&gt;</span><span class="s4">conn</span><span class="s1">-&gt;</span><span class="s4">prepare</span><span class="s1">(</span><span class="s6">&quot;DELETE FROM patients_login WHERE patient_id = ?&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">bind_param</span><span class="s1">(</span><span class="s6">&quot;s&quot;</span><span class="s0">, </span><span class="s5">$patient_id</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s0">if </span><span class="s1">(</span><span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">execute</span><span class="s1">()) {</span>
+            <span class="s0">return </span><span class="s4">true</span><span class="s0">;</span>
+        <span class="s1">} </span><span class="s0">else </span><span class="s1">{</span>
+            <span class="s0">return </span><span class="s4">false</span><span class="s0">;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+
+    <span class="s2">/********** OTRAS **********/</span>
+
+    <span class="s7">// Funciones públicas</span>
+
+    <span class="s2">/**</span>
+     <span class="s2">* Logea un paciente si el email existe y la contraseña es correcta</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $email el email del paciente</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $password la contraseña del paciente</span>
+     <span class="s2">* </span><span class="s3">@return </span><span class="s2">int Representa el resultado de la operación</span>
+     <span class="s2">*/</span>
+    <span class="s0">public function </span><span class="s4">patientLogin</span><span class="s1">(</span><span class="s5">$email</span><span class="s0">, </span><span class="s5">$password</span><span class="s1">)</span>
+    <span class="s1">{</span>
+        <span class="s0">if </span><span class="s1">(</span><span class="s5">$this</span><span class="s1">-&gt;</span><span class="s4">isEmailValid</span><span class="s1">(</span><span class="s5">$email</span><span class="s1">)) {</span>
+            <span class="s5">$dbPassword </span><span class="s1">= </span><span class="s5">$this</span><span class="s1">-&gt;</span><span class="s4">readPasswordByEmail</span><span class="s1">(</span><span class="s5">$email</span><span class="s1">)</span><span class="s0">;</span>
+            <span class="s0">if </span><span class="s1">(</span><span class="s5">$password </span><span class="s1">== </span><span class="s5">$dbPassword</span><span class="s1">) {</span>
+                <span class="s0">return </span><span class="s4">PATIENT_AUTHENTICATED</span><span class="s0">;</span>
+            <span class="s1">} </span><span class="s0">else </span><span class="s1">{</span>
+                <span class="s0">return </span><span class="s4">PATIENT_PASSWORD_DONT_MATCH</span><span class="s0">;</span>
+            <span class="s1">}</span>
+        <span class="s1">} </span><span class="s0">else </span><span class="s1">{</span>
+            <span class="s0">return </span><span class="s4">PATIENT_NOT_FOUND</span><span class="s0">;</span>
+        <span class="s1">}</span>
+    <span class="s1">}</span>
+
+    <span class="s7">// Funciones privadas</span>
+
+    <span class="s2">/**</span>
+     <span class="s2">* Compruba si el email existe en la tabla patients_login de la base de datos</span>
+     <span class="s2">* </span><span class="s3">@param </span><span class="s2">string $userEmail el email a comprobar</span>
+     <span class="s2">* </span><span class="s3">@return </span><span class="s2">bool True si el email existe, False en caso contrario</span>
+     <span class="s2">*/</span>
+    <span class="s0">private function </span><span class="s4">isEmailValid</span><span class="s1">(</span><span class="s5">$userEmail</span><span class="s1">)</span>
+    <span class="s1">{</span>
+        <span class="s7">// Preparamos la consulta, en este caso quiero seleccionar el email para comprobar que existe en la base de datos</span>
+        <span class="s5">$stmt </span><span class="s1">= </span><span class="s5">$this</span><span class="s1">-&gt;</span><span class="s4">conn</span><span class="s1">-&gt;</span><span class="s4">prepare</span><span class="s1">(</span><span class="s6">&quot;SELECT email FROM patients_login WHERE email = ?&quot;</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">bind_param</span><span class="s1">(</span><span class="s6">&quot;s&quot;</span><span class="s0">, </span><span class="s5">$userEmail</span><span class="s1">)</span><span class="s0">;</span>
+        <span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">execute</span><span class="s1">()</span><span class="s0">;</span>
+        <span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">store_result</span><span class="s1">()</span><span class="s0">;</span>
+        <span class="s0">return </span><span class="s5">$stmt</span><span class="s1">-&gt;</span><span class="s4">num_rows </span><span class="s1">&gt; </span><span class="s8">0</span><span class="s0">;</span>
+    <span class="s1">}</span>
+
+<span class="s1">}</span></pre>
+</body>
+</html>
