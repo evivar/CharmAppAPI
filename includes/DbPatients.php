@@ -37,7 +37,7 @@ class DbPatients
      *
      * @param string $patient_id el id del paciente
      * @param string $email el email del paciente
-     * @param string $password la contraseña del paciente
+     * @param string $password la contraseña del paciente hasheada con SHA512
      * @param string $name el nombre del paciente
      * @param string $surname1 el primer apellido del paciente
      * @param string $surname2 el segundo apellido del paciente
@@ -51,10 +51,8 @@ class DbPatients
     {
         if (!$this->isEmailValid($email)) {
             $stmt = $this->conn->prepare("INSERT INTO patients_login (patient_id, email, password, name, surname1, surname2, init_date, end_date, phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $hashed_password = hash("sha512", $password);
-            $stmt->bind_param("ssssssssi", $patient_id, $email, $hashed_password, $name, $surname1, $surname2, $init_date, $end_date, $phone);
+            $stmt->bind_param("ssssssssi", $patient_id, $email, $password, $name, $surname1, $surname2, $init_date, $end_date, $phone);
             if ($stmt->execute()) {
-                // Insertar en la tabla patients
                 return USER_CREATED;
             } else {
                 return USER_FAILURE;
@@ -65,10 +63,30 @@ class DbPatients
     }
 
     /**
+     * Compruba si el email existe en la tabla patients_login de la base de datos
+     *
+     * @param string $userEmail el email a comprobar
+     *
+     * @return bool True si el email existe, False en caso contrario
+     */
+    private function isEmailValid($userEmail)
+    {
+        // Preparamos la consulta, en este caso quiero seleccionar el email para comprobar que existe en la base de datos
+        $stmt = $this->conn->prepare("SELECT email FROM patients_login WHERE email = ?");
+        $stmt->bind_param("s", $userEmail);
+        $stmt->execute();
+        $stmt->store_result();
+        return $stmt->num_rows > 0;
+    }
+
+
+    /********** READ, READBY & READALL **********/
+
+    /**
      * Crea e inserta un paciente en la tabla patients_login siempre y cuando el paciente no exista previamente
      *
      * @param string $email el email del paciente
-     * @param string $password la contraseña del paciente
+     * @param string $password la contraseña del paciente hasheada con SHA512
      * @param string $name el nombre del paciente
      * @param string $surname1 el primer apellido del paciente
      * @param string $surname2 el segundo apellido del paciente
@@ -82,8 +100,7 @@ class DbPatients
     {
         if (!$this->isEmailValid($email)) {
             $stmt = $this->conn->prepare("INSERT INTO patients_login (patient_id, email, password, name, surname1, surname2, init_date, end_date, phone) VALUES ('', ?, ?, ?, ?, ?, ?, ?, ?)");
-            $hashed_password = hash("sha512", $password);
-            $stmt->bind_param("sssssssi", $email, $hashed_password, $name, $surname1, $surname2, $init_date, $end_date, $phone);
+            $stmt->bind_param("sssssssi", $email, $password, $name, $surname1, $surname2, $init_date, $end_date, $phone);
             if ($stmt->execute()) {
                 // Insertar en la tabla patients
                 return USER_CREATED;
@@ -94,9 +111,6 @@ class DbPatients
             return USER_EXISTS;
         }
     }
-
-
-    /********** READ, READBY & READALL **********/
 
     /**
      * Lee todos los pacientes de la tabla patients_login
@@ -136,34 +150,42 @@ class DbPatients
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $stmt->bind_result($patient_id, $email, $name, $surname1, $surname2, $init_date, $end_date, $phone);
-        $stmt->fetch();
-        $patient = array();
-        $patient['patient_id'] = $patient_id;
-        $patient['email'] = $email;
-        $patient['name'] = $name;
-        $patient['surname1'] = $surname1;
-        $patient['surname2'] = $surname2;
-        $patient['init_date'] = $init_date;
-        $patient['end_date'] = $end_date;
-        $patient['phone'] = $phone;
-        return $patient;
+        if ($stmt->fetch()) {
+            $patient = array();
+            $patient['patient_id'] = $patient_id;
+            $patient['email'] = $email;
+            $patient['name'] = $name;
+            $patient['surname1'] = $surname1;
+            $patient['surname2'] = $surname2;
+            $patient['init_date'] = $init_date;
+            $patient['end_date'] = $end_date;
+            $patient['phone'] = $phone;
+            return $patient;
+        } else {
+            return null;
+        }
     }
 
-    /**
-     * Lee la contraseña de un paciente dado el email
-     *
-     * @param string $email el email del paciente
-     *
-     * @return mixed Contraseña del paciente
-     */
-    public function readPasswordByEmail($email)
+    public function readPatientById($patient_id)
     {
-        $stmt = $this->conn->prepare("SELECT password FROM patients_login WHERE email = ?");
-        $stmt->bind_param("s", $email);
+        $stmt = $this->conn->prepare("SELECT patient_id, email, name, surname1, surname2, init_date, end_date, phone FROM patients_login WHERE patient_id = ?");
+        $stmt->bind_param("s", $patient_id);
         $stmt->execute();
-        $stmt->bind_result($password);
-        $stmt->fetch();
-        return (hash("sha512", $password));
+        $stmt->bind_result($patient_id, $email, $name, $surname1, $surname2, $init_date, $end_date, $phone);
+        if ($stmt->fetch()) {
+            $patient = array();
+            $patient['patient_id'] = $patient_id;
+            $patient['email'] = $email;
+            $patient['name'] = $name;
+            $patient['surname1'] = $surname1;
+            $patient['surname2'] = $surname2;
+            $patient['init_date'] = $init_date;
+            $patient['end_date'] = $end_date;
+            $patient['phone'] = $phone;
+            return $patient;
+        } else {
+            return null;
+        }
     }
 
     /********** UPDATE **********/
@@ -196,6 +218,31 @@ class DbPatients
     /********** DELETE **********/
 
     /**
+     * Lee la contraseña de un paciente dado el email
+     *
+     * @param string $email el email del paciente
+     *
+     * @return mixed Contraseña del paciente
+     */
+    public function readPasswordByEmail($email)
+    {
+        $stmt = $this->conn->prepare("SELECT password FROM patients_login WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $stmt->bind_result($password);
+        if ($stmt->fetch()) {
+            return $password;
+        } else {
+            return null;
+        }
+    }
+
+
+    /********** OTRAS **********/
+
+    // Funciones públicas
+
+    /**
      * Elimina a un paciente de la base de datos dado su id
      *
      * @param string $patient_id el id del paciente
@@ -213,16 +260,13 @@ class DbPatients
         }
     }
 
-
-    /********** OTRAS **********/
-
-    // Funciones públicas
+    // Funciones privadas
 
     /**
      * Logea un paciente si el email existe y la contraseña es correcta
      *
-     * @param string $email el email del paciente q
-     * @param string $password la contraseña del paciente
+     * @param string $email el email del paciente a logear
+     * @param string $password la contraseña del paciente hasheada con SHA512
      *
      * @return int Representa el resultado de la operación
      */
@@ -230,8 +274,7 @@ class DbPatients
     {
         if ($this->isEmailValid($email)) {
             $dbPassword = $this->readPasswordByEmail($email);
-            $hashed_password = hash("sha512", $password);
-            if ($hashed_password == $dbPassword) {
+            if ($password == $dbPassword) {
                 return PATIENT_AUTHENTICATED;
             } else {
                 return PATIENT_PASSWORD_DONT_MATCH;
@@ -239,25 +282,6 @@ class DbPatients
         } else {
             return PATIENT_NOT_FOUND;
         }
-    }
-
-    // Funciones privadas
-
-    /**
-     * Compruba si el email existe en la tabla patients_login de la base de datos
-     *
-     * @param string $userEmail el email a comprobar
-     *
-     * @return bool True si el email existe, False en caso contrario
-     */
-    private function isEmailValid($userEmail)
-    {
-        // Preparamos la consulta, en este caso quiero seleccionar el email para comprobar que existe en la base de datos
-        $stmt = $this->conn->prepare("SELECT email FROM patients_login WHERE email = ?");
-        $stmt->bind_param("s", $userEmail);
-        $stmt->execute();
-        $stmt->store_result();
-        return $stmt->num_rows > 0;
     }
 
 }
