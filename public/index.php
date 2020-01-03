@@ -617,7 +617,7 @@ $app->post('/CharmAppAPI/public/createCrisis', function (Request $request, Respo
         $pain_scale = $request_data['pain_scale'];
 
         $db = new DbHeadaches;
-        $result = $db->createHeadache($patient_id, $start_datetime, $end_datetime, $sport, $alcohol, $smoke, $medication, $feeling, $pain_scale);
+        $result = $db->createCrisis($patient_id, $start_datetime, $end_datetime, $sport, $alcohol, $smoke, $medication, $feeling, $pain_scale);
         $message = array();
         if ($result == HEADACHE_CREATED) {
             $message['Error'] = false;
@@ -754,7 +754,7 @@ $app->post('/CharmAppAPI/public/readCrisisByDate', function (Request $request, R
             $response->getBody()->write(json_encode($message));
             return $response
                 ->withHeader('Content-type', 'application/json')
-                ->withStatus(404);
+                ->withStatus(200);
         }
     } else {
         return $response
@@ -835,7 +835,7 @@ $app->post('/CharmAppAPI/public/readActiveCrisisById', function (Request $reques
                 ->withHeader('Content-type', 'application/json')
                 ->withStatus(200);
         } else {
-            $message['Error'] = true;
+            $message['Error'] = false;
             $message['Mensaje'] = "No hay ninguna crisis activa actualmente para el paciente con id '" . $patient_id . "'";
             $message['Resultado'] = $crisis;
             $response->getBody()->write(json_encode($message));

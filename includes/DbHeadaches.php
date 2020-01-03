@@ -30,7 +30,7 @@ class DbHeadaches
         // Primero comprobamos que el patient_id es correcto
         if ($this->isPatientIdValid($patient_id)) {
             // Si el id es correcto, preparamos la consulta
-            $stmt = $this->conn->prepare("INSERT INTO headaches (patient_id, ch_id, start_datetime, end_datetime, sport, alcohol, smoke, medication, feeling, pain_scale) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ");
+            $stmt = $this->conn->prepare("INSERT INTO headaches (patient_id, start_datetime, end_datetime, sport, alcohol, smoke, medication, feeling, pain_scale) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ");
             // Bindeamos los parámetros
             $stmt->bind_param("ssssssssi", $patient_id, $start_datetime, $end_datetime, $sport, $alcohol, $smoke, $medication, $feeling, $pain_scale);
             // Comprobamos si se ha ejecutado correctamente
@@ -60,7 +60,7 @@ class DbHeadaches
         $stmt->execute();
         // Guardamos el resultado
         $stmt->store_result();
-        var_dump($stmt->affected_rows);
+        //var_dump($stmt->affected_rows);
         // Devolvemos cuando el numero de filas que da como resultado es mayor que 0
         return $stmt->num_rows >= 1;
     }
@@ -182,7 +182,7 @@ class DbHeadaches
 
     public function readActiveCrisisByEmail($email)
     {
-        $stmt = $this->conn->prepare("SELECT h.patient_id, h.start_datetime, h.end_datetime, h.sport, h.alcohol, h.smoke, h.medication, h.feeling, h.pain_scale FROM headaches h JOIN patients_login p ON h.patient_id = p.patient_id WHERE p.email = ? AND end_datetime IS NULL LIMIT 1");
+        $stmt = $this->conn->prepare("SELECT h.patient_id, h.start_datetime, h.end_datetime, h.sport, h.alcohol, h.smoke, h.medication, h.feeling, h.pain_scale FROM headaches h JOIN patients_login p ON h.patient_id = p.patient_id WHERE p.email = ? AND end_datetime IS NULL OR end_datetime = 0000-00-00 LIMIT 1");
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $stmt->bind_result($patient_id, $start_datetime, $end_datetime, $sport, $alcohol, $smoke, $medication, $feeling, $pain_scale);
@@ -205,7 +205,7 @@ class DbHeadaches
 
     public function readActiveCrisisById($patient_id)
     {
-        $stmt = $this->conn->prepare("SELECT patient_id, start_datetime, end_datetime, sport, alcohol, smoke, medication, feeling, pain_scale FROM headaches WHERE patient_id = ? AND end_datetime IS NULL LIMIT 1");
+        $stmt = $this->conn->prepare("SELECT patient_id, start_datetime, end_datetime, sport, alcohol, smoke, medication, feeling, pain_scale FROM headaches WHERE patient_id = ? AND end_datetime IS NULL OR end_datetime = 0000-00-00 LIMIT 1");
         $stmt->bind_param("s", $patient_id);
         $stmt->execute();
         $stmt->bind_result($patient_id, $start_datetime, $end_datetime, $sport, $alcohol, $smoke, $medication, $feeling, $pain_scale);
