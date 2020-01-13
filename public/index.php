@@ -763,6 +763,66 @@ $app->post('/CharmAppAPI/public/readCrisisByDate', function (Request $request, R
     }
 });
 
+$app->post('/CharmAppAPI/public/readCrisisByDateV2', function (Request $request, Response $response) {
+    if (!emptyParameters(array('patient_id', 'date'), $request, $response)) {
+        $request_data = $request->getParsedBody();
+        $patient_id = $request_data['patient_id'];
+        $date = $request_data['date'];
+        $test = false;
+        $db = new DbHeadaches;
+        $activeCrisis = $db->readActiveCrisisById($patient_id);
+        $message = array();
+        $crisisStartDate = date("Y-m-d", strtotime($activeCrisis['start_datetime']));
+        $selectedDate = date("Y-m-d", strtotime($date));
+        if (($crisisStartDate <= $selectedDate) /*&& ($crisisStartDate >= $selectedDate)*/) {
+            if ($activeCrisis) {
+                $message['Error'] = false;
+                $message['Mensaje'] = "Crisis activa con fecha de inicio " . $activeCrisis['start_datetime'] . " para el paciente con id " . $activeCrisis['patient_id'] . " leida correctamente";
+                $message['Resultado'] = $activeCrisis;
+
+                $response->getBody()->write(json_encode($message));
+                return $response
+                    ->withHeader('Content-type', 'application/json')
+                    ->withStatus(200);
+            } else {
+                $message['Error'] = true;
+                $message['Mensaje'] = "No hay ninguna crisis para la fecha " . $date . "";
+                $message['Resultado'] = null;
+
+                $response->getBody()->write(json_encode($message));
+                return $response
+                    ->withHeader('Content-type', 'application/json')
+                    ->withStatus(200);
+            }
+        } else {
+            $crisis = $db->readCrisisByDate($patient_id, $date);
+            if ($crisis) {
+                $message['Error'] = false;
+                $message['Mensaje'] = "Crisis con fecha de inicio " . $crisis['start_datetime'] . " para el paciente con id " . $crisis['patient_id'] . " leida correctamente";
+                $message['Resultado'] = $crisis;
+
+                $response->getBody()->write(json_encode($message));
+                return $response
+                    ->withHeader('Content-type', 'application/json')
+                    ->withStatus(200);
+            } else {
+                $message['Error'] = true;
+                $message['Mensaje'] = "No hay ninguna crisis para la fecha " . $date . "";
+                $message['Resultado'] = null;
+
+                $response->getBody()->write(json_encode($message));
+                return $response
+                    ->withHeader('Content-type', 'application/json')
+                    ->withStatus(200);
+            }
+        }
+    } else {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withStatus(400);
+    }
+});
+
 $app->get('/CharmAppAPI/public/readAllActiveCrisis', function (Request $request, Response $response) {
     $db = new DbHeadaches;
     $crisis = $db->readAllActiveCrisis();
