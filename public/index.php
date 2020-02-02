@@ -226,6 +226,38 @@ $app->post('/CharmAppAPI/public/readPatientById', function (Request $request, Re
     }
 });
 
+$app->post('/CharmAppAPI/public/readCrisisDurationById', function (Request $request, Response $response) {
+    if (!emptyParameters(array('patient_id'), $request, $response)) {
+        $request_data = $request->getParsedBody();
+        $patient_id = $request_data['patient_id'];
+
+        $db = new DbPatients;
+        $result = $db->readCrisisDurationById($patient_id);
+        $message = array();
+        if ($result) {
+            $message['Error'] = false;
+            $message['Mensaje'] = "Paciente leido correctamente";
+            $message['Resultado'] = $result;
+            $response->getBody()->write(json_encode($message));
+            return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(200);
+        } else {
+            $message['Error'] = true;
+            $message['Mensaje'] = "El paciente con id '" . $patient_id . "' no existe";
+            $message['Resultado'] = null;
+            $response->getBody()->write(json_encode($message));
+            return $response
+                ->withHeader('Content-type', 'application/json')
+                ->withStatus(404);
+        }
+    } else {
+        return $response
+            ->withHeader('Content-type', 'application/json')
+            ->withStatus(422);
+    }
+});
+
 $app->post('/CharmAppAPI/public/readPasswordByEmail', function (Request $request, Response $response) {
     if (!emptyParameters(array('email'), $request, $response)) {
         $request_data = $request->getParsedBody();

@@ -151,6 +151,7 @@ class DbPatients
         $stmt->execute();
         $stmt->bind_result($patient_id, $email, $name, $surname1, $surname2, $init_date, $end_date, $phone);
         if ($stmt->fetch()) {
+            $stmt->close();
             $patient = array();
             $patient['patient_id'] = $patient_id;
             $patient['email'] = $email;
@@ -160,6 +161,7 @@ class DbPatients
             $patient['init_date'] = $init_date;
             $patient['end_date'] = $end_date;
             $patient['phone'] = $phone;
+            $patient['ch_duration'] = $this->readCrisisDurationById($patient_id);
             return $patient;
         } else {
             return null;
@@ -173,6 +175,7 @@ class DbPatients
         $stmt->execute();
         $stmt->bind_result($patient_id, $email, $name, $surname1, $surname2, $init_date, $end_date, $phone);
         if ($stmt->fetch()) {
+            $stmt->close();
             $patient = array();
             $patient['patient_id'] = $patient_id;
             $patient['email'] = $email;
@@ -182,7 +185,21 @@ class DbPatients
             $patient['init_date'] = $init_date;
             $patient['end_date'] = $end_date;
             $patient['phone'] = $phone;
+            $patient['ch_duration'] = $this->readCrisisDurationById($patient_id);
             return $patient;
+        } else {
+            return null;
+        }
+    }
+
+    public function readCrisisDurationById($patient_id)
+    {
+        $stmt = $this->conn->prepare("SELECT ch_duration FROM patients WHERE patient_id = ?");
+        $stmt->bind_param("s", $patient_id);
+        $stmt->execute();
+        $stmt->bind_result($ch_duration);
+        if ($stmt->fetch()) {
+            return $ch_duration;
         } else {
             return null;
         }
